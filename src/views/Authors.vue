@@ -3,10 +3,10 @@
 
     <div class="row">
       <div class="col q-pa-md">
-        <q-input v-model="filterName" label="Фильтр по ФИО" />
+        <q-input v-model.trim="filterName" label="Фильтр по ФИО" />
       </div>
       <div class="col q-pa-md">
-        <q-input v-model="filterCountry" label="Фильтр по стране" />
+        <q-input v-model.trim="filterCountry" label="Фильтр по стране" />
       </div>
     </div>
 
@@ -35,45 +35,42 @@
 </style>
 
 <script>
-const columns = [
-  { name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true },
-  {
-    name: 'name',
-    required: true,
-    label: 'ФИО',
-    align: 'left',
-    field: row => row.name,
-    format: val => `${val}`,
-    sortable: true
-  },
-  { name: 'country', align: 'left', label: 'Страна', field: 'country', sortable: true },
-  { name: 'birth_date', align: 'center', label: 'Дата рождения', field: 'birth_date', sortable: true },
-  { name: 'action', align: 'right', label: '', field: '' },
-]
 
-import {authorsLoaded, authorsSave} from '../hooks/authors.js';
 import { ref, computed } from 'vue';
+import store from '../store/index';
+import {columns} from "../hooks/authors";
+import {useRouter} from "vue-router";
 
 export default {
   name: 'Authors',
+  store,
   setup () {
+    const router = useRouter();
     let filterName = ref('');
     let filterCountry = ref('');
-    let authors = ref(authorsLoaded);
+    let authors = ref(store.getters.authors);
     const filtredAuthors = computed(() => {
       return authors.value.filter((o) => {
-        let checkName = !filterName.value || o.name.toLowerCase().includes(filterName.value.toLowerCase().trim());
-        let checkCountry = !filterCountry.value || o.country.toLowerCase().includes(filterCountry.value.toLowerCase().trim());
+        let checkName = !filterName.value || o.name.toLowerCase().includes(filterName.value.toLowerCase());
+        let checkCountry = !filterCountry.value || o.country.toLowerCase().includes(filterCountry.value.toLowerCase());
         return checkName && checkCountry;
       });
     })
     const deleteAuthor = (id) => {
-      authors.value = authors.value.filter(function(o) {
+      authors.value = authors.value.filter((o) => {
         return o.id !== id;
       });
-      authorsSave(authors.value);
+      store.commit('authorsSave', authors.value);
+    }
+    const addAuthor = () => {
+      router.push({name: 'author_page', params: {id: 'add'}});
+    }
+    const editAuthor = (id) => {
+      router.push({name: 'author_page', params: {id: id}});
     }
     return {
+      addAuthor,
+      editAuthor,
       deleteAuthor,
       filterName,
       filterCountry,
@@ -82,14 +79,5 @@ export default {
       filtredAuthors
     }
   },
-  methods: {
-    addAuthor() {
-      this.$router.push({name: 'author_page', params: {id: 'add'}});
-    },
-    editAuthor(id) {
-      this.$router.push({name: 'author_page', params: {id: id}});
-    },
-
-  }
 }
 </script>

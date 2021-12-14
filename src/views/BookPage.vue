@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-form
         @submit="onSubmit"
-        @reset="onReset"
+        @reset="exitToBooks"
         class="q-gutter-md"
     >
       <h3 v-if="isbn !== 'add'">Редактирование книги #{{ isbn }}</h3>
@@ -22,7 +22,7 @@
 
       <q-select
           filled
-          v-model="author_id"
+          v-model.number="author_id"
           emit-value
           map-options
           label="Автор"
@@ -56,12 +56,11 @@
 <script>
 import {ref} from 'vue'
 import { useRoute } from 'vue-router'
-
-import {booksLoaded, booksSave} from '../hooks/books.js';
-import {authorsLoaded} from '../hooks/authors.js';
+import store from '../store/index';
 
 export default {
   name: 'BookPage',
+  store,
   setup () {
     const route = useRoute();
     const isbn = ref(route.params.id);
@@ -71,13 +70,13 @@ export default {
     const year = ref(null);
     const authors = ref(null);
     let authorsArr = [];
-    authorsLoaded.forEach((a) => {
+    store.getters.authors.forEach((a) => {
       authorsArr.push({value: a.id, label: a.name});
     })
     authors.value = authorsArr;
     if (isbn.value !== 'add') {
       // update
-      let book = booksLoaded.find((o) => {return o.isbn === isbn.value});
+      let book = store.getters.books.find((o) => {return o.isbn === isbn.value});
       name.value = book.name;
       author_id.value = +book.author_id;
 
@@ -95,8 +94,8 @@ export default {
     }
   },
   methods: {
-    onReset() {
-      this.$router.push({name: 'authors'});
+    exitToBooks() {
+      this.$router.push({name: 'books'});
     },
     onSubmit() {
       let authorName = '';
@@ -105,6 +104,7 @@ export default {
           authorName = o.label;
         }
       });
+      let booksLoaded = store.getters.books;
       if (this.id !== 'add') {
         booksLoaded.forEach((o) => {
           if (o.isbn === this.isbn) {
@@ -125,7 +125,7 @@ export default {
           year: this.year,
         });
       }
-      booksSave(booksLoaded);
+      store.commit('booksSave', booksLoaded);
       this.$router.push({name: 'books'});
     }
   }

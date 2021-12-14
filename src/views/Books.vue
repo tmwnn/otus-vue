@@ -3,10 +3,10 @@
 
     <div class="row">
       <div class="col q-pa-md">
-        <q-input v-model="filterName" label="Фильтр по названию" />
+        <q-input v-model.trim="filterName" label="Фильтр по названию" />
       </div>
       <div class="col q-pa-md">
-        <q-input v-model="filterAuthor" label="Фильтр по автору" />
+        <q-input v-model.trim="filterAuthor" label="Фильтр по автору" />
       </div>
     </div>
 
@@ -35,40 +35,22 @@
 </style>
 
 <script>
-const columns = [
-  { name: 'isbn', label: 'ISBN', field: 'isbn', sortable: true, align: 'left' },
-  {
-    name: 'name',
-    required: true,
-    label: 'Название',
-    align: 'left',
-    field: row => row.name,
-    format: val => `${val}`,
-    sortable: true
-  },
-  { name: 'author', label: 'Aвтор', field: 'author', sortable: true, align: 'left' },
-  { name: 'category', label: 'Категория', field: 'category', sortable: true, align: 'left' },
-  { name: 'year', align: 'center', label: 'Год издания', field: 'year', sortable: true },
-  { name: 'action', align: 'right', label: '', field: '' },
-]
 import { ref, computed } from 'vue';
-import {booksLoaded, booksSave} from '../hooks/books.js';
-import {authorsLoaded} from '../hooks/authors.js';
-booksLoaded.forEach((book) => {
-  book.author = authorsLoaded.find(o => +o.id === +book.author_id).name;
-});
-
-
+import store from '../store/index';
+import { columns } from "../hooks/books";
+import { useRouter } from 'vue-router'
 export default {
   name: 'Books',
+  store,
   setup () {
+    const router = useRouter();
     let filterName = ref('');
     let filterAuthor = ref('');
-    let books = ref(booksLoaded);
+    let books = ref(store.getters.books);
     const filtredBooks = computed(() => {
       return books.value.filter((o) => {
-        let checkName = !filterName.value || o.name.toLowerCase().includes(filterName.value.toLowerCase().trim());
-        let checkCountry = !filterAuthor.value || o.author.toLowerCase().includes(filterAuthor.value.toLowerCase().trim());
+        let checkName = !filterName.value || o.name.toLowerCase().includes(filterName.value.toLowerCase());
+        let checkCountry = !filterAuthor.value || o.author.toLowerCase().includes(filterAuthor.value.toLowerCase());
         return checkName && checkCountry;
       });
     })
@@ -76,9 +58,17 @@ export default {
       books.value = books.value.filter(function(o) {
         return o.isbn !== isbn;
       });
-      booksSave(books.value);
+      store.commit('booksSave', books.value);
+    }
+    const addBook = () => {
+      router.push({name: 'book_page', params: {id: 'add'}});
+    }
+    const editBook = (isbn) => {
+      router.push({name: 'book_page', params: {id: isbn}});
     }
     return {
+      addBook,
+      editBook,
       deleteBook,
       filterName,
       filterAuthor,
@@ -87,14 +77,5 @@ export default {
       filtredBooks
     }
   },
-  methods: {
-    addBook() {
-      this.$router.push({name: 'book_page', params: {id: 'add'}});
-    },
-    editBook(isbn) {
-      this.$router.push({name: 'book_page', params: {id: isbn}});
-    },
-
-  }
 }
 </script>
