@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <q-form
         @submit="onSubmit"
-        @reset="onReset"
+        @reset="exitToAuthors"
         class="q-gutter-md"
     >
       <h3 v-if="id !== 'add'">Редактирование автора #{{ id }}</h3>
@@ -40,10 +40,11 @@
 <script>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import {authorsLoaded, authorsSave} from '../hooks/authors.js';
+import store from '../store/index';
 
 export default {
   name: 'AuthorPage',
+  store,
   setup () {
     const route = useRoute();
     const id = route.params.id;
@@ -53,7 +54,7 @@ export default {
 
     if (id !== 'add') {
       // update
-      let author = authorsLoaded.find((o) => {return o.id === +id});
+      let author = store.getters.authors.find((o) => {return o.id === +id});
       name.value = author.name;
       birthDate.value = author.birth_date;
       country.value = author.country;
@@ -67,10 +68,11 @@ export default {
     }
   },
   methods: {
-    onReset() {
+    exitToAuthors() {
       this.$router.push({name: 'authors'});
     },
     onSubmit() {
+      let authorsLoaded = store.getters.authors;
       if (this.id !== 'add') {
         authorsLoaded.forEach((o) => {
           if (o.id === +this.id) {
@@ -90,7 +92,7 @@ export default {
           birth_date: this.birthDate,
         });
       }
-      authorsSave(authorsLoaded);
+      store.commit('authorsSave', authorsLoaded);
       this.$router.push({name: 'authors'});
     }
   }

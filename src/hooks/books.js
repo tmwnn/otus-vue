@@ -61,19 +61,21 @@ let booksInit = [
     },
 
 ];
+const columns = [
+    { name: 'isbn', label: 'ISBN', field: 'isbn', sortable: true, align: 'left' },
+    {
+        name: 'name',
+        required: true,
+        label: 'Название',
+        align: 'left',
+        field: row => row.name,
+        format: val => `${val}`,
+        sortable: true
+    },
+    { name: 'author', label: 'Aвтор', field: 'author', sortable: true, align: 'left' },
+    { name: 'category', label: 'Категория', field: 'category', sortable: true, align: 'left' },
+    { name: 'year', align: 'center', label: 'Год издания', field: 'year', sortable: true },
+    { name: 'action', align: 'right', label: '', field: '' },
+]
 
-
-let booksLoaded = [];
-let booksLoadedJson = localStorage.getItem('books');
-if (!booksLoadedJson) {
-    localStorage.setItem('books', JSON.stringify(booksInit))
-    booksLoaded = booksInit;
-} else {
-    booksLoaded = JSON.parse(booksLoadedJson);
-}
-
-const booksSave = (books) => {
-    localStorage.setItem('books', JSON.stringify(books))
-}
-
-export {booksLoaded, booksSave};
+export {booksInit, columns};

@@ -30,18 +30,20 @@ let authorsInit = [
         country: 'Великобритания',
     },
 ];
+const columns = [
+    { name: 'id', align: 'center', label: 'ID', field: 'id', sortable: true },
+    {
+        name: 'name',
+        required: true,
+        label: 'ФИО',
+        align: 'left',
+        field: row => row.name,
+        format: val => `${val}`,
+        sortable: true
+    },
+    { name: 'country', align: 'left', label: 'Страна', field: 'country', sortable: true },
+    { name: 'birth_date', align: 'center', label: 'Дата рождения', field: 'birth_date', sortable: true },
+    { name: 'action', align: 'right', label: '', field: '' },
+];
 
-let authorsLoaded = [];
-let authorsLoadedJson = localStorage.getItem('authors');
-if (!authorsLoadedJson) {
-    localStorage.setItem('authors', JSON.stringify(authorsInit))
-    authorsLoaded = authorsInit;
-} else {
-    authorsLoaded = JSON.parse(authorsLoadedJson);
-}
-
-const authorsSave = (authors) => {
-    localStorage.setItem('authors', JSON.stringify(authors))
-}
-
-export {authorsLoaded, authorsSave};
+export {authorsInit, columns};
